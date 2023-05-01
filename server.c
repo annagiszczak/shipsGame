@@ -20,17 +20,16 @@ int map[10][10];
 } Ships;
 
 void SetShips(int sd, Ships *player){
-	int s = 0;
 	int x=0, y=0;
 	char buffer[10];
-	while(s < 1)
-	{
+	for(int i = 0; i < 1; i++){
 		read(sd, buffer, 10);
-		// scanf("%d %d",x,y);
-		sprintf(buffer, "%d %d", x, y);
-		player->map[x][y] = 1;
-		s++;
+		x = atoi(buffer);
+		read(sd, buffer, 10);
+		y = atoi(buffer);
+		printf("x: %d y: %d\n", x, y);
 	}
+
 }
 
 void SendMap(int sd, Ships *player){
@@ -83,6 +82,7 @@ int main(int argc , char *argv[])
 		max_clients = 2 , activity, i , valread , sd;
 	int max_sd;
 	struct sockaddr_in address;
+	Ships player[2] = {0};
 		
 	char buffer[1025]; //data buffer of 1K
 		
@@ -208,20 +208,23 @@ int main(int argc , char *argv[])
 		}
 
 		//Odtąd będziemy korygować kod
-
+		
 		if(client_socket[0] != 0 && client_socket[1] != 0){
-			Ships player[2] = {0};
-			puts("Game is starting");
-			message = "Hello in the game, please set your ships\n";
+			
+			puts("Game is starting \n");
+			message = "Hello in the game, please set your ships \n";
 			for(int i = 0; i < max_clients; i++){
+				printf("%d\n", i);
 				send(client_socket[i], message, strlen(message), 0);
 				SetShips(client_socket[i], &player[i]);
 			}
+			
 			message = "Game is starting\n";
 			for(int i = 0; i < max_clients; i++){
 					send(client_socket[i], message, strlen(message), 0);
 			}
-
+			while(1){}
+			/*
 			while(1){
 				for(int i = 0; i < max_clients; i++){
 					message = "Your turn\n";
@@ -255,6 +258,7 @@ int main(int argc , char *argv[])
 				sd = client_socket[i];
 				close(sd);
 			}
+		}*/
 		}
 		
 

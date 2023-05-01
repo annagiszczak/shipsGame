@@ -22,6 +22,8 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
   struct sockaddr_in localAddr, servAddr;
   struct hostent *h;
   char buffer[1024];
+  char buffer2[1024];
+
   
   if(argc < 2) {
     printf("usage:  %s <server> \n",argv[0]);
@@ -79,17 +81,39 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
 
    
   // }
+  //Odczytuje HELLO MESSAGE
+  read(sd, buffer, sizeof(buffer));
+  printf("%s\n", buffer);
+
+  //Odczytuje Hello game message
+  read(sd, buffer, sizeof(buffer));
+  printf("%s\n", buffer);
+
+  //Ustawia statki
+  for(int i = 0; i < 1; i++){
+    scanf("%s", buffer);
+    scanf("%s", buffer2);
+    if(send(sd, buffer, strlen(buffer) + 1, 0)<0) printf("Error\n");
+    if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) printf("Error\n");
+    printf("%s  ", buffer);
+    printf("%s", buffer2);
+  }
+
+  //Odczytuje Game is starting
   read(sd, buffer, sizeof(buffer));
   printf("%s\n", buffer);
 
 
-  while(1){
-    read(sd, buffer, sizeof(buffer));
-    printf("%s\n", buffer);
-    // rc = send(sd, argv[i], strlen(argv[i]) + 1, 0);
-    //wyslac koordynaty statku
+
+
+  // while(1){
+    // puts("Hello");
+  //   read(sd, buffer, sizeof(buffer));
+  //   printf("%s\n", buffer);
+  //   // rc = send(sd, argv[i], strlen(argv[i]) + 1, 0);
+  //   //wyslac koordynaty statku
     
-  }
+  // }
 
 return 0;
   
