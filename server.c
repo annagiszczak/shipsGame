@@ -208,49 +208,53 @@ int main(int argc , char *argv[])
 		}
 
 		//Odtąd będziemy korygować kod
-		Ships player[2] = {0};
-		message = "Hello in the game, please set your ships\n";
-		for(int i = 0; i < max_clients; i++){
-			send(client_socket[i], message, strlen(message), 0);
-			SetShips(client_socket[i], &player[i]);
-		}
-		message = "Game is starting\n";
-		for(int i = 0; i < max_clients; i++){
-				send(client_socket[i], message, strlen(message), 0);
-		}
 
-		while(1){
+		if(client_socket[0] != 0 && client_socket[1] != 0){
+			Ships player[2] = {0};
+			puts("Game is starting");
+			message = "Hello in the game, please set your ships\n";
 			for(int i = 0; i < max_clients; i++){
-				message = "Your turn\n";
 				send(client_socket[i], message, strlen(message), 0);
-				Shoot(client_socket[i], &player[(i+1)%2]);
-				message = "Wait for your turn\n";
-				send(client_socket[i], message, strlen(message), 0);
+				SetShips(client_socket[i], &player[i]);
 			}
-			if(NumberOfShips(&player[0]) == 0){
-				message = "Player 1 won\n";
-				send(client_socket[0], message, strlen(message), 0);
-				message = "You won\n";
-				send(client_socket[1], message, strlen(message), 0);
-				message = "You lost\n";
-				send(client_socket[0], message, strlen(message), 0);
-				break;
-			}
-			if(NumberOfShips(&player[1]) == 0){
-				message = "Player 0 won\n";
-				send(client_socket[1], message, strlen(message), 0);
-				message = "You won\n";
-				send(client_socket[0], message, strlen(message), 0);
-				message = "You lost\n";
-				send(client_socket[1], message, strlen(message), 0);
-				break;
+			message = "Game is starting\n";
+			for(int i = 0; i < max_clients; i++){
+					send(client_socket[i], message, strlen(message), 0);
 			}
 
-		}
-		//close connections
-		for (i = 0; i < max_clients; i++){
-			sd = client_socket[i];
-			close(sd);
+			while(1){
+				for(int i = 0; i < max_clients; i++){
+					message = "Your turn\n";
+					send(client_socket[i], message, strlen(message), 0);
+					Shoot(client_socket[i], &player[(i+1)%2]);
+					message = "Wait for your turn\n";
+					send(client_socket[i], message, strlen(message), 0);
+				}
+				if(NumberOfShips(&player[0]) == 0){
+					message = "Player 1 won\n";
+					send(client_socket[0], message, strlen(message), 0);
+					message = "You won\n";
+					send(client_socket[1], message, strlen(message), 0);
+					message = "You lost\n";
+					send(client_socket[0], message, strlen(message), 0);
+					break;
+				}
+				if(NumberOfShips(&player[1]) == 0){
+					message = "Player 0 won\n";
+					send(client_socket[1], message, strlen(message), 0);
+					message = "You won\n";
+					send(client_socket[0], message, strlen(message), 0);
+					message = "You lost\n";
+					send(client_socket[1], message, strlen(message), 0);
+					break;
+				}
+
+			}
+			//close connections
+			for (i = 0; i < max_clients; i++){
+				sd = client_socket[i];
+				close(sd);
+			}
 		}
 		
 

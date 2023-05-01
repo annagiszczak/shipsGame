@@ -21,9 +21,10 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
   int sd, rc;
   struct sockaddr_in localAddr, servAddr;
   struct hostent *h;
+  char buffer[1024];
   
   if(argc < 2) {
-    printf("usage: %s <server> \n",argv[0]);
+    printf("usage:  %s <server> \n",argv[0]);
     exit(1);
   }
 
@@ -78,9 +79,13 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
 
    
   // }
+  read(sd, buffer, sizeof(buffer));
+  printf("%s\n", buffer);
 
 
   while(1){
+    read(sd, buffer, sizeof(buffer));
+    printf("%s\n", buffer);
     // rc = send(sd, argv[i], strlen(argv[i]) + 1, 0);
     //wyslac koordynaty statku
     
