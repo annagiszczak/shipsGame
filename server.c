@@ -16,64 +16,58 @@
 #define PORT 8888
 
 typedef struct Ships {
-	int map[10][10];
+int map[10][10];
 } Ships;
 
-void Zeros(int map[][]){
-	for(int i = 0; i < 10; i++)
-		for(int j = 0; j < 10; j++)
-			map[i][j] = 0;
-	return map;
-}
-
-void SetShips(int sd, int map[][]){
+void SetShips(int sd, Ships *player){
 	int s = 0;
-	int x, y;
+	int x=0, y=0;
 	char buffer[10];
 	while(s < 1)
 	{
 		read(sd, buffer, 10);
 		// scanf("%d %d",x,y);
 		sprintf(buffer, "%d %d", x, y);
-		map[x][y] = 1;
+		player->map[x][y] = 1;
 		s++;
 	}
-	return map;
 }
 
-void SendMap(int sd, map[][]){
+void SendMap(int sd, Ships *player){
 	char buffer[10];
 	for(int i = 0; i < 10; i++){
 		for(int j = 0; j < 10; j++){
-			sprintf(buffer, "%d", map[i][j]);
+			sprintf(buffer, "%d", player->map[i][j]);
 			write(sd, buffer, strlen(buffer));
 		}
 	}
 }
 
-void MissOrHit(int sd, int x, int y, map[][]){
-	if(map[x][y] == 1)
-		map[x][y] = 2;
-		write(sd, "HIT", 3)
-	else
-		map[x][y] = 3;
-		write(sd, "MISS", 4)
+void MissOrHit(int sd, int x, int y, Ships *player){
+	if(player->map[x][y] == 1){
+		player->map[x][y] = 2;
+		write(sd, "HIT", 3);
+	}
+	else{
+		player->map[x][y] = 3;
+		write(sd, "MISS", 4);
+	}
 }
 
-void shoot(int sd){
-	int x, y;
+void Shoot(int sd, Ships *player){
+	int x=0, y=0;
 	char buffer[10];
 	read(sd, buffer, 10);
 	sprintf(buffer, "%d %d", x, y);
-	MissOrHit(sd, x, y, map[][]);
+	MissOrHit(sd, x, y, player);
 }
 
-int NumberOfShips(map[][]){
+int NumberOfShips(Ships *player){
 	int c = 0;
 
-	for(int i=0; i < rows; i++)
-		for(int j=0; j < elements; j++){
-			if(map[i][j] == 1)
+	for(int i=0; i < 10; i++)
+		for(int j=0; j < 10; j++){
+			if(player->map[i][j] == 1)
 			c++;
 		}
 
@@ -218,23 +212,22 @@ int main(int argc , char *argv[])
 		message = "Hello in the game, please set your ships\n";
 		for(int i = 0; i < max_clients; i++){
 			send(client_socket[i], message, strlen(message), 0);
-			player[i].setShips(client_socket[i]);
+			SetShips(client_socket[i], &player[i]);
 		}
 		message = "Game is starting\n";
 		for(int i = 0; i < max_clients; i++){
 				send(client_socket[i], message, strlen(message), 0);
-				player[i].setShips(client_socket[i]);
 		}
 
 		while(1){
 			for(int i = 0; i < max_clients; i++){
 				message = "Your turn\n";
 				send(client_socket[i], message, strlen(message), 0);
-				player[i].shoot(client_socket[i]);
+				Shoot(client_socket[i], &player[(i+1)%2]);
 				message = "Wait for your turn\n";
 				send(client_socket[i], message, strlen(message), 0);
 			}
-			if(player[0].NumberOfShips() == 0){
+			if(NumberOfShips(&player[0]) == 0){
 				message = "Player 1 won\n";
 				send(client_socket[0], message, strlen(message), 0);
 				message = "You won\n";
@@ -243,7 +236,7 @@ int main(int argc , char *argv[])
 				send(client_socket[0], message, strlen(message), 0);
 				break;
 			}
-			if(player[1].NumberOfShips() == 0){
+			if(NumberOfShips(&player[1]) == 0){
 				message = "Player 0 won\n";
 				send(client_socket[1], message, strlen(message), 0);
 				message = "You won\n";
