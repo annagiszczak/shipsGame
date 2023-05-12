@@ -10,26 +10,57 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
+#include <time.h>
 	
 #define TRUE 1
 #define FALSE 0
 #define PORT 8888
+
+void delay(int number_of_sec){
+	int mili_sec = 1000*number_of_sec;
+	clock_t start_time = clock();
+	while(clock()<start_time + mili_sec);
+}
+
+///Globalne zmienne MESSAGE
+char *HELLO_MESS = "Hello in the game, please set your ships\n";
+char *GAME_MESS = "Game is starting\n";		
+char *YOUT_MESS = "Your turn\n";
+
+
 
 typedef struct Ships {
 int map[10][10];
 } Ships;
 
 void SetShips(int sd, Ships *player){
-	int x=0, y=0;
-	char buffer[10];
+	memset(player->map, 0, sizeof(player->map));
+	int x=0, y=0, rc;
+	char bufferx[3];
+	char buffery[3];
 	for(int i = 0; i < 1; i++){
-		read(sd, buffer, 10);
-		x = atoi(buffer);
-		read(sd, buffer, 10);
-		y = atoi(buffer);
+		rc = read(sd, bufferx, 3);
+		if(rc<0){
+			perror("cannot send data");
+		}
+		x = atoi(bufferx);
+		memset(bufferx, '\0', sizeof(bufferx));
+		// delay(1);
+		rc = read(sd, buffery, 3);
+		if(rc<0){
+			perror("cannot send data");
+		}
+		y = atoi(buffery);
+		memset(buffery, '\0', sizeof(buffery));
 		printf("x: %d y: %d\n", x, y);
+		player->map[x][y]=1;
 	}
-
+	for(int j = 0;j<10;j++){
+		for(int i=0;i<10;i++){
+			printf(" %d ",player->map[j][i]);
+		}
+		puts("\n");
+	}
 }
 
 void SendMap(int sd, Ships *player){
@@ -54,11 +85,47 @@ void MissOrHit(int sd, int x, int y, Ships *player){
 }
 
 void Shoot(int sd, Ships *player){
-	int x=0, y=0;
-	char buffer[10];
-	read(sd, buffer, 10);
-	sprintf(buffer, "%d %d", x, y);
-	MissOrHit(sd, x, y, player);
+
+	int x=0, y=0, rc;
+	char bufferx[3];
+	char buffery[3];
+	char *HIT_MESS = "Zatopiony, jeszcze raz\n";
+	char *MISS_MESS = "Pudło, kolej przeciwnika\n";
+	while(1){
+		rc = read(sd, bufferx, 3);
+		if(rc<0){
+			perror("cannot send data");
+		}
+		x = atoi(bufferx);
+		memset(bufferx, '\0', sizeof(bufferx));
+		rc = read(sd, buffery, 3);
+		if(rc<0){
+			perror("cannot send data");
+		}
+		y = atoi(buffery);
+		memset(buffery, '\0', sizeof(buffery));
+		printf("x: %d y: %d\n", x, y);
+
+		if(player->map[x][y]==1){
+			player->map[x][y]=2;
+			send(sd,HIT_MESS, strlen(HIT_MESS), 0);
+		} else if(player->map[x][y]==0){
+			send(sd,MISS_MESS, strlen(MISS_MESS), 0);
+			break;
+		}
+	}
+	// for(int j = 0;j<10;j++){
+	// 	for(int i=0;i<10;i++){
+	// 		printf(" %d ",player->map[j][i]);
+	// 	}
+	// 	puts("\n");
+	// }
+	// int x=0, y=0;
+	// char bufferx[3];
+	// char buffery[3];
+	// read(sd, buffer, 3);
+	// sprintf(buffer, "%d %d", x, y);
+	// MissOrHit(sd, x, y, player);
 }
 
 int NumberOfShips(Ships *player){
@@ -211,48 +278,50 @@ int main(int argc , char *argv[])
 		
 		if(client_socket[0] != 0 && client_socket[1] != 0){
 			
-			puts("Game is starting \n");
-			message = "Hello in the game, please set your ships \n";
+			puts("Game is starting\n");
+			// memset(message, '\0', sizeof(&message));
 			for(int i = 0; i < max_clients; i++){
-				printf("%d\n", i);
-				send(client_socket[i], message, strlen(message), 0);
+				// printf("%d\n", i);
+				send(client_socket[i], HELLO_MESS, strlen(HELLO_MESS), 0);
 				SetShips(client_socket[i], &player[i]);
 			}
 			
-			message = "Game is starting\n";
+			// memset(message, '\0', strlen(message));
+			
 			for(int i = 0; i < max_clients; i++){
-					send(client_socket[i], message, strlen(message), 0);
+					send(client_socket[i], GAME_MESS, strlen(GAME_MESS), 0);
 			}
-			while(1){}
-			/*
+
+			
 			while(1){
 				for(int i = 0; i < max_clients; i++){
-					message = "Your turn\n";
-					send(client_socket[i], message, strlen(message), 0);
+					send(client_socket[i], YOUT_MESS, strlen(YOUT_MESS), 0);
 					Shoot(client_socket[i], &player[(i+1)%2]);
-					message = "Wait for your turn\n";
-					send(client_socket[i], message, strlen(message), 0);
+					// message = "Wait for your turn\n";
+					// send(client_socket[i], message, strlen(message), 0);
 				}
-				if(NumberOfShips(&player[0]) == 0){
-					message = "Player 1 won\n";
-					send(client_socket[0], message, strlen(message), 0);
-					message = "You won\n";
-					send(client_socket[1], message, strlen(message), 0);
-					message = "You lost\n";
-					send(client_socket[0], message, strlen(message), 0);
-					break;
-				}
-				if(NumberOfShips(&player[1]) == 0){
-					message = "Player 0 won\n";
-					send(client_socket[1], message, strlen(message), 0);
-					message = "You won\n";
-					send(client_socket[0], message, strlen(message), 0);
-					message = "You lost\n";
-					send(client_socket[1], message, strlen(message), 0);
-					break;
-				}
+				// if(NumberOfShips(&player[0]) == 0){
+				// 	message = "Player 1 won\n";
+				// 	send(client_socket[0], message, strlen(message), 0);
+				// 	message = "You won\n";
+				// 	send(client_socket[1], message, strlen(message), 0);
+				// 	message = "You lost\n";
+				// 	send(client_socket[0], message, strlen(message), 0);
+				// 	break;
+				// }
+				// if(NumberOfShips(&player[1]) == 0){
+				// 	message = "Player 0 won\n";
+				// 	send(client_socket[1], message, strlen(message), 0);
+				// 	message = "You won\n";
+				// 	send(client_socket[0], message, strlen(message), 0);
+				// 	message = "You lost\n";
+				// 	send(client_socket[1], message, strlen(message), 0);
+				// 	break;
+				// }
 
 			}
+			
+			/*
 			//close connections
 			for (i = 0; i < max_clients; i++){
 				sd = client_socket[i];

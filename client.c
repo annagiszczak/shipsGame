@@ -12,7 +12,13 @@
 #include <stdlib.h>
 #include <unistd.h> /* close */
 #include <string.h> /* memset() */
+#include <time.h>
 
+void delay(int number_of_sec){
+	int mili_sec = 1000*number_of_sec;
+	clock_t start_time = clock();
+	while(clock()<start_time + mili_sec);
+}
 
 int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
 
@@ -93,27 +99,44 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
   for(int i = 0; i < 1; i++){
     scanf("%s", buffer);
     scanf("%s", buffer2);
-    if(send(sd, buffer, strlen(buffer) + 1, 0)<0) printf("Error\n");
-    if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) printf("Error\n");
-    printf("%s  ", buffer);
-    printf("%s", buffer2);
+    if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n");
+    delay(1);
+    if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n");
+    // printf("%s  ", buffer);
+    // printf("%s  ", buffer2);
+    memset(buffer, '\0', sizeof(buffer));
+    memset(buffer2, '\0', sizeof(buffer2));
   }
 
   //Odczytuje Game is starting
   read(sd, buffer, sizeof(buffer));
   printf("%s\n", buffer);
 
+  //
+  
 
-
-
-  // while(1){
-    // puts("Hello");
-  //   read(sd, buffer, sizeof(buffer));
-  //   printf("%s\n", buffer);
-  //   // rc = send(sd, argv[i], strlen(argv[i]) + 1, 0);
-  //   //wyslac koordynaty statku
+  while(1){
+    memset(buffer, '\0', sizeof(buffer));
+    read(sd, buffer, sizeof(buffer));
+    printf("\n %s\n", buffer);
+    memset(buffer, '\0', sizeof(buffer));
+    while(1){
+      scanf("%s", buffer);
+      scanf("%s", buffer2);
+      if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n");
+      delay(1);
+      if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n");
+      memset(buffer, '\0', sizeof(buffer));
+      memset(buffer2, '\0', sizeof(buffer2));
+      read(sd, buffer, sizeof(buffer));
+      if(strcmp(buffer,"Pudło, kolej przeciwnika\n")==0){
+        break;
+      }
+    }
+    // rc = send(sd, argv[i], strlen(argv[i]) + 1, 0);
+    // wyslac koordynaty statku
     
-  // }
+  }
 
 return 0;
   
