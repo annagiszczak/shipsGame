@@ -27,18 +27,26 @@ char *HELLO_MESS = "Hello in the game, please set your ships\n";
 char *GAME_MESS = "Game is starting\n";		
 char *YOUT_MESS = "Your turn\n";
 
+//Victory
+char *WINP0_MESS = "Player 0 won\n";
+char *WINP1_MESS = "Player 1 won\n";
+char *WIN_MESS = "You won\n";
+char *LOSE_MESS = "You lose\n";
+
 
 
 typedef struct Ships {
 int map[10][10];
+int n;
 } Ships;
 
 void SetShips(int sd, Ships *player){
 	memset(player->map, 0, sizeof(player->map));
+	player->n = 3;   ///jak zmieniamy statki to tu i u graczy
 	int x=0, y=0, rc;
 	char bufferx[3];
 	char buffery[3];
-	for(int i = 0; i < 1; i++){
+	for(int i = 0; i < player->n; i++){
 		rc = read(sd, bufferx, 3);
 		if(rc<0){
 			perror("cannot send data");
@@ -58,6 +66,7 @@ void SetShips(int sd, Ships *player){
 	for(int j = 0;j<10;j++){
 		for(int i=0;i<10;i++){
 			printf(" %d ",player->map[j][i]);
+
 		}
 		puts("\n");
 	}
@@ -65,24 +74,34 @@ void SetShips(int sd, Ships *player){
 
 void SendMap(int sd, Ships *player){
 	char buffer[10];
-	for(int i = 0; i < 10; i++){
-		for(int j = 0; j < 10; j++){
+	for(int j = 0;j<10;j++){
+		for(int i=0;i<10;i++){
+			printf(" %d ",player->map[j][i]);
 			sprintf(buffer, "%d", player->map[i][j]);
-			write(sd, buffer, strlen(buffer));
+			send(sd,buffer, strlen(buffer), 0);
 		}
+		puts("\n");
 	}
+	// char buffer[10];
+	// for(int i = 0; i < 10; i++){
+	// 	for(int j = 0; j < 10; j++){
+	// 		sprintf(buffer, "%d", player->map[i][j]);
+	// 		write(sd, buffer, strlen(buffer));
+	// 	}
+	// }
 }
 
-void MissOrHit(int sd, int x, int y, Ships *player){
-	if(player->map[x][y] == 1){
-		player->map[x][y] = 2;
-		write(sd, "HIT", 3);
-	}
-	else{
-		player->map[x][y] = 3;
-		write(sd, "MISS", 4);
-	}
-}
+// void MissOrHit(int sd, int x, int y, Ships *player){
+// 	if(player->map[x][y] == 1){
+// 		player->map[x][y] = 2;
+// 		write(sd, "HIT", 3);
+// 		n--;
+// 	}
+// 	else{
+// 		player->map[x][y] = 3;
+// 		write(sd, "MISS", 4);
+// 	}
+// }
 
 void Shoot(int sd, Ships *player){
 
@@ -91,6 +110,7 @@ void Shoot(int sd, Ships *player){
 	char buffery[3];
 	char *HIT_MESS = "Zatopiony, jeszcze raz\n";
 	char *MISS_MESS = "Pudło, kolej przeciwnika\n";
+	char *LASTHIT_MESS = "Zatopiony, ostatni statek\n";
 	while(1){
 		rc = read(sd, bufferx, 3);
 		if(rc<0){
@@ -108,39 +128,21 @@ void Shoot(int sd, Ships *player){
 
 		if(player->map[x][y]==1){
 			player->map[x][y]=2;
+			player->n--;
+			if(player->n==0){
+				send(sd,LASTHIT_MESS, strlen(LASTHIT_MESS), 0);
+				puts("siedze w ifie ostatni statek");
+				break;
+			}
+			puts("siedze w ifie obok wiadomosci HIT_message");
 			send(sd,HIT_MESS, strlen(HIT_MESS), 0);
 		} else if(player->map[x][y]==0){
 			send(sd,MISS_MESS, strlen(MISS_MESS), 0);
 			break;
 		}
 	}
-	// for(int j = 0;j<10;j++){
-	// 	for(int i=0;i<10;i++){
-	// 		printf(" %d ",player->map[j][i]);
-	// 	}
-	// 	puts("\n");
-	// }
-	// int x=0, y=0;
-	// char bufferx[3];
-	// char buffery[3];
-	// read(sd, buffer, 3);
-	// sprintf(buffer, "%d %d", x, y);
-	// MissOrHit(sd, x, y, player);
+	puts("wyszedlem z petli");
 }
-
-int NumberOfShips(Ships *player){
-	int c = 0;
-
-	for(int i=0; i < 10; i++)
-		for(int j=0; j < 10; j++){
-			if(player->map[i][j] == 1)
-			c++;
-		}
-
-	return c;
-}
-
-
 
 int main(int argc , char *argv[])
 {
@@ -297,37 +299,31 @@ int main(int argc , char *argv[])
 				for(int i = 0; i < max_clients; i++){
 					send(client_socket[i], YOUT_MESS, strlen(YOUT_MESS), 0);
 					Shoot(client_socket[i], &player[(i+1)%2]);
+					if(player[(i+1)%2].n == 0) break;
 					// message = "Wait for your turn\n";
 					// send(client_socket[i], message, strlen(message), 0);
 				}
-				// if(NumberOfShips(&player[0]) == 0){
-				// 	message = "Player 1 won\n";
-				// 	send(client_socket[0], message, strlen(message), 0);
-				// 	message = "You won\n";
-				// 	send(client_socket[1], message, strlen(message), 0);
-				// 	message = "You lost\n";
-				// 	send(client_socket[0], message, strlen(message), 0);
-				// 	break;
-				// }
-				// if(NumberOfShips(&player[1]) == 0){
-				// 	message = "Player 0 won\n";
-				// 	send(client_socket[1], message, strlen(message), 0);
-				// 	message = "You won\n";
-				// 	send(client_socket[0], message, strlen(message), 0);
-				// 	message = "You lost\n";
-				// 	send(client_socket[1], message, strlen(message), 0);
-				// 	break;
-				// }
-
+				if(player[0].n == 0){
+					send(client_socket[0], WINP1_MESS, strlen(WINP0_MESS), 0);
+					send(client_socket[1], WIN_MESS, strlen(WIN_MESS), 0);
+					send(client_socket[0], LOSE_MESS, strlen(LOSE_MESS), 0);
+					break;
+				}else if(player[1].n == 0){
+					send(client_socket[1], WINP0_MESS, strlen(WINP1_MESS), 0);
+					send(client_socket[0], WIN_MESS, strlen(WIN_MESS), 0);
+					send(client_socket[1], LOSE_MESS, strlen(LOSE_MESS), 0);
+					break;
+				}
 			}
 			
-			/*
+			
 			//close connections
-			for (i = 0; i < max_clients; i++){
-				sd = client_socket[i];
-				close(sd);
-			}
-		}*/
+			// for (i = 0; i < max_clients; i++){
+			// 	sd = client_socket[i];
+			// 	close(sd);
+			// 	client_socket[i] = 0;
+			// }
+		// }*/
 		}
 		
 

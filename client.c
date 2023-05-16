@@ -14,6 +14,8 @@
 #include <string.h> /* memset() */
 #include <time.h>
 
+int n = 3;
+
 void delay(int number_of_sec){
 	int mili_sec = 1000*number_of_sec;
 	clock_t start_time = clock();
@@ -96,14 +98,13 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
   printf("%s\n", buffer);
 
   //Ustawia statki
-  for(int i = 0; i < 1; i++){
+  for(int i = 0; i < n; i++){
     scanf("%s", buffer);
     scanf("%s", buffer2);
     if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n");
     delay(1);
     if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n");
-    // printf("%s  ", buffer);
-    // printf("%s  ", buffer2);
+    delay(1);
     memset(buffer, '\0', sizeof(buffer));
     memset(buffer2, '\0', sizeof(buffer2));
   }
@@ -117,24 +118,36 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
 
   while(1){
     memset(buffer, '\0', sizeof(buffer));
-    read(sd, buffer, sizeof(buffer));
+    read(sd, buffer, sizeof(buffer));  //YOUT_MESS
     printf("\n %s\n", buffer);
     memset(buffer, '\0', sizeof(buffer));
     while(1){
-      scanf("%s", buffer);
-      scanf("%s", buffer2);
-      if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n");
+      scanf("%s", buffer); //x
+      scanf("%s", buffer2); //y
+      if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n"); //send x
       delay(1);
-      if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n");
+      if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n"); //send y
       memset(buffer, '\0', sizeof(buffer));
       memset(buffer2, '\0', sizeof(buffer2));
-      read(sd, buffer, sizeof(buffer));
+      delay(1);
+      read(sd, buffer, sizeof(buffer));  //read MISS or HIT or LASTHIT
+      printf("\n %s\n", buffer);
       if(strcmp(buffer,"Pudło, kolej przeciwnika\n")==0){
+        break;
+      }else if(strcmp(buffer,"Zatopiony, ostatni statek\n")==0){
+        memset(buffer, '\0', sizeof(buffer));
+        read(sd, buffer, sizeof(buffer));
+        printf("\n %s\n", buffer);
+        memset(buffer, '\0', sizeof(buffer));
+        read(sd, buffer, sizeof(buffer));
+        printf("\n %s\n", buffer);
+        memset(buffer, '\0', sizeof(buffer));
+        read(sd, buffer, sizeof(buffer));
+        printf("\n %s\n", buffer);
+        memset(buffer, '\0', sizeof(buffer));
         break;
       }
     }
-    // rc = send(sd, argv[i], strlen(argv[i]) + 1, 0);
-    // wyslac koordynaty statku
     
   }
 
