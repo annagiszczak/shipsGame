@@ -46,27 +46,95 @@ typedef struct Ships {
 
 void SetShips(int sd, Ships *player){
 	memset(player->map, 0, sizeof(player->map));
-	player->n = 3;   ///jak zmieniamy statki to tu i u graczy
+	player->n = 3;
 	int x=0, y=0, rc;
 	char bufferx[3];
 	char buffery[3];
-	for(int i = 0; i < player->n; i++){
+	char *SHIP_MESS[]={"\nSet your three-mast ships\n", "\nSet your two-mast ships\n", "\nSet your one-mast ships\n"};
+	//wysyla wiadomosc o ustawianiu statkow
+	send(sd, SHIP_MESS[0], strlen(SHIP_MESS[0]), 0);
+	//delay(1);
+	for(int i = 0; i<3; i++){
+		puts("czekam na x");
 		rc = read(sd, bufferx, 3);
+		puts("po czekaniu na x");
 		if(rc<0){
-			perror("cannot send data");
+			perror("cannot read data");
 		}
 		x = atoi(bufferx);
 		memset(bufferx, '\0', sizeof(bufferx));
 		// delay(1);
 		rc = read(sd, buffery, 3);
 		if(rc<0){
-			perror("cannot send data");
+			perror("cannot read data");
 		}
 		y = atoi(buffery);
 		memset(buffery, '\0', sizeof(buffery));
 		printf("x: %d y: %d\n", x, y);
 		player->map[x][y]=1;
+		player->three[i][0]=x;
+		player->three[i][1]=y;
 	}
+	send(sd, SHIP_MESS[1], strlen(SHIP_MESS[1]), 0);
+	for(int i = 0; i<2; i++){
+		rc = read(sd, bufferx, 3);
+		if(rc<0){
+			perror("cannot read data");
+		}
+		x = atoi(bufferx);
+		memset(bufferx, '\0', sizeof(bufferx));
+		// delay(1);
+		rc = read(sd, buffery, 3);
+		if(rc<0){
+			perror("cannot read data");
+		}
+		y = atoi(buffery);
+		memset(buffery, '\0', sizeof(buffery));
+		printf("x: %d y: %d\n", x, y);
+		player->map[x][y]=1;
+		player->two[i][0]=x;
+		player->two[i][1]=y;
+	}
+	send(sd, SHIP_MESS[2], strlen(SHIP_MESS[2]), 0);
+	for(int i = 0; i<1; i++){
+		rc = read(sd, bufferx, 3);
+		if(rc<0){
+			perror("cannot read data");
+		}
+		x = atoi(bufferx);
+		memset(bufferx, '\0', sizeof(bufferx));
+		// delay(1);
+		rc = read(sd, buffery, 3);
+		if(rc<0){
+			perror("cannot read data");
+		}
+		y = atoi(buffery);
+		memset(buffery, '\0', sizeof(buffery));
+		printf("x: %d y: %d\n", x, y);
+		player->map[x][y]=1;
+		player->one[i][0]=x;
+		player->one[i][1]=y;
+	}
+
+
+
+	// for(int i = 0; i < player->n; i++){
+	// 	rc = read(sd, bufferx, 3);
+	// 	if(rc<0){
+	// 		perror("cannot send data");
+	// 	}
+	// 	x = atoi(bufferx);
+	// 	memset(bufferx, '\0', sizeof(bufferx));
+	// 	// delay(1);
+	// 	rc = read(sd, buffery, 3);
+	// 	if(rc<0){
+	// 		perror("cannot send data");
+	// 	}
+	// 	y = atoi(buffery);
+	// 	memset(buffery, '\0', sizeof(buffery));
+	// 	printf("x: %d y: %d\n", x, y);
+	// 	player->map[x][y]=1;
+	// }
 	for(int j = 0;j<10;j++){
 		for(int i=0;i<10;i++){
 			printf(" %d ",player->map[j][i]);
@@ -322,11 +390,13 @@ int main(int argc , char *argv[])
 			
 			
 			//close connections
-			// for (i = 0; i < max_clients; i++){
-			// 	sd = client_socket[i];
-			// 	close(sd);
-			// 	client_socket[i] = 0;
-			// }
+			getpeername(sd , (struct sockaddr*)&address ,(socklen_t*)&addrlen);
+			printf("Host disconnected , ip %s , port %d \n" ,inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
+			for (i = 0; i < max_clients; i++){
+				sd = client_socket[i];
+				close(sd);
+				client_socket[i] = 0;
+			}
 		// }*/
 		}
 		

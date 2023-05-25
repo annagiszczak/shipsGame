@@ -30,7 +30,7 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
   struct sockaddr_in localAddr, servAddr;
   struct hostent *h;
   char buffer[1024]="";
-  char buffer2[1024];
+  char buffer2[1024]="";
 
   
   if(argc < 2) {
@@ -98,15 +98,22 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
   printf("%s\n", buffer);
 
   //Ustawia statki
-  for(int i = 0; i < n; i++){
-    scanf("%s", buffer);
-    scanf("%s", buffer2);
-    if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n");
-    delay(1);
-    if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n");
-    delay(1);
+  for(int j = 3; j>0; j--){
     memset(buffer, '\0', sizeof(buffer));
-    memset(buffer2, '\0', sizeof(buffer2));
+    read(sd, buffer, sizeof(buffer));
+    delay(1);
+    printf("%s\n", buffer);
+    memset(buffer, '\0', sizeof(buffer));
+    for(int i = 0; i < 3-j; i++){
+      scanf("%s", buffer);
+      scanf("%s", buffer2);
+      if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n");
+      delay(1);
+      if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n");
+      delay(1);
+      memset(buffer, '\0', sizeof(buffer));
+      memset(buffer2, '\0', sizeof(buffer2));
+    }
   }
 
   //Odczytuje Game is starting
