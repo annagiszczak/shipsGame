@@ -31,6 +31,7 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
   struct hostent *h;
   char buffer[1024]="";
   char buffer2[1024]="";
+  char shoot_map[3]="";
 
   
   if(argc < 2) {
@@ -99,18 +100,26 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
 
   //Ustawia statki
   for(int j = 3; j>0; j--){
+    printf("%d co \n", j);
     memset(buffer, '\0', sizeof(buffer));
-    read(sd, buffer, sizeof(buffer));
-    delay(1);
+    printf("%d coo\n", j);
+    rc = read(sd, buffer, sizeof(buffer));
+    printf("%d\n", rc);
+    printf("%d cooo\n", j);
+    // delay(1);
     printf("%s\n", buffer);
     memset(buffer, '\0', sizeof(buffer));
-    for(int i = 0; i < 3-j; i++){
-      scanf("%s", buffer);
-      scanf("%s", buffer2);
+    for(int i = 0; i < j; i++){
+      printf("jestem w petli\n");
+      // delay(10);
+      scanf(" %s", buffer);
+      scanf(" %s", buffer2);
       if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n");
       delay(1);
       if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n");
       delay(1);
+      printf("%s\n", buffer);
+      printf("%s\n", buffer2);
       memset(buffer, '\0', sizeof(buffer));
       memset(buffer2, '\0', sizeof(buffer2));
     }
@@ -139,6 +148,16 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
       delay(1);
       read(sd, buffer, sizeof(buffer));  //read MISS or HIT or LASTHIT
       printf("\n %s\n", buffer);
+      //Wyswietla plansze strzalow
+      for(int j = 0;j<10;j++){
+        for(int i=0;i<10;i++){
+          memset(shoot_map, '\0', sizeof(shoot_map));
+          read(sd, shoot_map, sizeof(shoot_map));
+          printf("%s", shoot_map);
+        }
+		  puts("\n");
+	    }
+
       if(strcmp(buffer,"Pudło, kolej przeciwnika\n")==0){
         break;
       }else if(strcmp(buffer,"Zatopiony, ostatni statek\n")==0){

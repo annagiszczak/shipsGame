@@ -42,10 +42,12 @@ typedef struct Ships {
 	int three[3][2];
 	int two[2][2];
 	int one[1][2];
+	int shoot_map[10][10]; //mapa do wizualizacji strzalow
 } Ships;
 
 void SetShips(int sd, Ships *player){
 	memset(player->map, 0, sizeof(player->map));
+	memset(player->shoot_map, 0, sizeof(player->shoot_map));
 	player->n = 3;
 	int x=0, y=0, rc;
 	char bufferx[3];
