@@ -108,19 +108,19 @@ void Shoot(int sd, Ships *player){
 	int x=0, y=0, rc;
 	char bufferx[3];
 	char buffery[3];
-	char *HIT_MESS = "Zatopiony, jeszcze raz\n";
-	char *MISS_MESS = "Pudło, kolej przeciwnika\n";
-	char *LASTHIT_MESS = "Zatopiony, ostatni statek\n";
+	char *HIT_MESS = "Good. Shoot, once again\n";
+	char *MISS_MESS = "Miss, Your opponent's turn\n";
+	char *LASTHIT_MESS = "The last ship sunk\n";
 	while(1){
 		rc = read(sd, bufferx, 3);
 		if(rc<0){
-			perror("cannot send data");
+			perror("Cannot send data");
 		}
 		x = atoi(bufferx);
 		memset(bufferx, '\0', sizeof(bufferx));
 		rc = read(sd, buffery, 3);
 		if(rc<0){
-			perror("cannot send data");
+			perror("Cannot send data");
 		}
 		y = atoi(buffery);
 		memset(buffery, '\0', sizeof(buffery));
@@ -170,7 +170,7 @@ int main(int argc , char *argv[])
 	//create a master socket
 	if( (master_socket = socket(AF_INET , SOCK_STREAM , 0)) == 0)
 	{
-		perror("socket failed");
+		perror("Socket failed");
 		exit(EXIT_FAILURE);
 	}
 	

@@ -29,7 +29,7 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
   int sd, rc;
   struct sockaddr_in localAddr, servAddr;
   struct hostent *h;
-  char buffer[1024];
+  char buffer[1024]="";
   char buffer2[1024];
 
   
