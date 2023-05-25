@@ -36,8 +36,12 @@ char *LOSE_MESS = "You lose\n";
 
 
 typedef struct Ships {
-int map[10][10];
-int n;
+	int map[10][10];
+	int n;
+	//int four[4][2];
+	int three[3][2];
+	int two[2][2];
+	int one[1][2];
 } Ships;
 
 void SetShips(int sd, Ships *player){
