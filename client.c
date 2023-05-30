@@ -14,7 +14,7 @@
 #include <string.h> /* memset() */
 #include <time.h>
 
-int n = 3;
+int n = 6;
 
 void delay(int number_of_sec){
 	int mili_sec = 1000*number_of_sec;
@@ -31,7 +31,7 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
   struct hostent *h;
   char buffer[1024]="";
   char buffer2[1024]="";
-  char shoot_map[3]="";
+  char shoot_map[1024]="";
 
   
   if(argc < 2) {
@@ -132,14 +132,13 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
       delay(1);
       read(sd, buffer, sizeof(buffer));  //read MISS or HIT or LASTHIT
       printf("\n %s\n", buffer);
-      //Wyswietla plansze strzalow
-      for(int j = 0;j<10;j++){
-        for(int i=0;i<10;i++){
-          memset(shoot_map, '\0', sizeof(shoot_map));
-          read(sd, shoot_map, sizeof(shoot_map));
-          printf("%s ", shoot_map);
-        }
-		    printf("\n");
+      //wyswietla strzaly
+      memset(shoot_map, '\0', sizeof(shoot_map));
+      read(sd, shoot_map, sizeof(shoot_map));
+      delay(1);
+      printf("%s\n", shoot_map);
+      delay(1);
+
 	    }
 
       if(strcmp(buffer,"Miss, Your opponent's turn\n")==0){
@@ -155,18 +154,17 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
         read(sd, buffer, sizeof(buffer));
         printf("\n %s\n", buffer);
         memset(buffer, '\0', sizeof(buffer));
+        //zamyka polaczenie
+        rc = send(sd, buffer, strlen(buffer) + 1, 0);
+        if(rc<0) {
+          perror("cannot send data ");
+          close(sd);
+          exit(1);
+        }
         break;
       }
-    }
-    rc = send(sd, buffer, strlen(buffer) + 1, 0);
-    
-    if(rc<0) {
-      perror("cannot send data ");
-      close(sd);
-      exit(1);
-    }
-    
   }
+  
 
 return 0;
   

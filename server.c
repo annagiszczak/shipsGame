@@ -32,6 +32,8 @@ char *WINP0_MESS = "Player 0 won\n";
 char *WINP1_MESS = "Player 1 won\n";
 char *WIN_MESS = "You won\n";
 char *LOSE_MESS = "You lose\n";
+char send_map[1024] = "";
+char int_var[10]="";
 
 typedef struct Ships {
 	int map[10][10];
@@ -46,7 +48,7 @@ typedef struct Ships {
 void SetShips(int sd, Ships *player){
 	memset(player->map, 0, sizeof(player->map));
 	memset(player->shoot_map, 0, sizeof(player->shoot_map));
-	player->n = 3;
+	player->n = 6;
 	int x=0, y=0, rc;
 	char bufferx[3];
 	char buffery[3];
@@ -105,26 +107,6 @@ void SetShips(int sd, Ships *player){
 		player->one[i][0]=x;
 		player->one[i][1]=y;
 	}
-
-
-
-	// for(int i = 0; i < player->n; i++){
-	// 	rc = read(sd, bufferx, 3);
-	// 	if(rc<0){
-	// 		perror("cannot send data");
-	// 	}
-	// 	x = atoi(bufferx);
-	// 	memset(bufferx, '\0', sizeof(bufferx));
-	// 	// delay(1);
-	// 	rc = read(sd, buffery, 3);
-	// 	if(rc<0){
-	// 		perror("cannot send data");
-	// 	}
-	// 	y = atoi(buffery);
-	// 	memset(buffery, '\0', sizeof(buffery));
-	// 	printf("x: %d y: %d\n", x, y);
-	// 	player->map[x][y]=1;
-	// }
 	for(int j = 0;j<10;j++){
 		for(int i=0;i<10;i++){
 			printf(" %d ",player->map[j][i]);
@@ -133,37 +115,6 @@ void SetShips(int sd, Ships *player){
 		puts("\n");
 	}
 }
-
-void SendMap(int sd, Ships *player){
-	char buffer[10];
-	for(int j = 0;j<10;j++){
-		for(int i=0;i<10;i++){
-			printf(" %d ",player->map[j][i]);
-			sprintf(buffer, "%d", player->map[i][j]);
-			send(sd,buffer, strlen(buffer), 0);
-		}
-		puts("\n");
-	}
-	// char buffer[10];
-	// for(int i = 0; i < 10; i++){
-	// 	for(int j = 0; j < 10; j++){
-	// 		sprintf(buffer, "%d", player->map[i][j]);
-	// 		write(sd, buffer, strlen(buffer));
-	// 	}
-	// }
-}
-
-// void MissOrHit(int sd, int x, int y, Ships *player){
-// 	if(player->map[x][y] == 1){
-// 		player->map[x][y] = 2;
-// 		write(sd, "HIT", 3);
-// 		n--;
-// 	}
-// 	else{
-// 		player->map[x][y] = 3;
-// 		write(sd, "MISS", 4);
-// 	}
-// }
 
 void Shoot(int sd, Ships *player){
 
@@ -195,33 +146,57 @@ void Shoot(int sd, Ships *player){
 			if(player->n==0){
 				send(sd,LASTHIT_MESS, strlen(LASTHIT_MESS), 0);
 				puts("siedze w ifie ostatni statek");
+				//dodac wyswietlanie mapy
 				break;
 			}
+			send(sd,HIT_MESS, strlen(HIT_MESS)+1, 0);
 			puts("siedze w ifie obok wiadomosci HIT_message");
-			send(sd,HIT_MESS, strlen(HIT_MESS), 0);
-
-			for(int j = 0;j<10;j++){
+			memset(send_map, '\0', sizeof(send_map));
+			for(int j=0;j<10;j++){
 				for(int i=0;i<10;i++){
-					memset(bufferx, '\0', sizeof(bufferx));
-					sprintf(bufferx, "%d", player->shoot_map[j][i]);
-					if(send(sd,bufferx, strlen(bufferx), 0)<0) puts("error, cannot send data\n");
+					memset(int_var, '\0', sizeof(int_var));
+					sprintf(int_var, "%d", player->shoot_map[j][i]);
+					strcat(send_map, int_var);
+					strcat(send_map, " ");
 				}
+				strcat(send_map, "\n");
 			}
+			printf("%s\n", send_map);
+			if(send(sd,send_map, strlen(send_map)+1, 0)<0) puts("error, cannot send data\n");
+
 		} else if(player->map[x][y]==0){
 			player->shoot_map[x][y]=-1;
-			send(sd,MISS_MESS, strlen(MISS_MESS), 0);
-			for(int j = 0;j<10;j++){
+			send(sd,MISS_MESS, strlen(MISS_MESS)+1, 0);
+			memset(send_map, '\0', sizeof(send_map));
+			for(int j=0;j<10;j++){
 				for(int i=0;i<10;i++){
-					memset(bufferx, '\0', sizeof(bufferx));
-					sprintf(bufferx, "%d", player->shoot_map[j][i]);
-					if(send(sd,bufferx, strlen(bufferx), 0)<0) puts("error, cannot send data\n");
+					memset(int_var, '\0', sizeof(int_var));
+					sprintf(int_var, "%d", player->shoot_map[j][i]);
+					strcat(send_map, int_var);
+					strcat(send_map, " ");
 				}
+				strcat(send_map, "\n");
 			}
+			if(send(sd,send_map, strlen(send_map)+1, 0)<0) puts("error, cannot send data\n");
+			
+			
+			// for(int j = 0;j<10;j++){
+			// 	for(int i=0;i<10;i++){
+			// 		memset(bufferx, '\0', sizeof(bufferx));
+			// 		sprintf(bufferx, "%d ", player->shoot_map[j][i]);
+			// 		// printf("%s ", bufferx);
+			// 		if(send(sd,bufferx, strlen(bufferx), 0)<0) puts("error, cannot send data\n");
+			// 	}
+			// 	if(send(sd,"\n", strlen("\n"), 0)<0) puts("error, cannot send data\n");
+			// }
 			break;
 		}
 	}
 	puts("wyszedlem z petli");
 }
+
+
+
 
 int main(int argc , char *argv[])
 {
