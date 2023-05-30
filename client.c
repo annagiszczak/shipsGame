@@ -115,7 +115,7 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
 
   //
   
-
+ //glowna petla
   while(1){
     memset(buffer, '\0', sizeof(buffer));
     read(sd, buffer, sizeof(buffer));  //YOUT_MESS odczytuje your turn
@@ -127,17 +127,18 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
       if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n"); //send x
       delay(1);
       if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n"); //send y
-      memset(buffer, '\0', sizeof(buffer));
-      memset(buffer2, '\0', sizeof(buffer2));
-      memset(shoot_map, '\0', sizeof(shoot_map));
-      delay(1);
+      delay(2);
+      memset(buffer, '\0', sizeof(buffer)); //x
+      memset(buffer2, '\0', sizeof(buffer2)); //y
+      memset(shoot_map, '\0', sizeof(shoot_map)); //mapa
       read(sd, buffer, sizeof(buffer));  //read MISS or HIT or LASTHIT
       printf("\n %s\n", buffer); 
+      delay(2);
       //wyswietla strzaly
       read(sd, shoot_map, sizeof(shoot_map));
-       //delaye dodac czy cos
+      //delaye dodac czy cos
       printf("%s\n", shoot_map);
-
+      delay(1);
       if(strcmp(buffer,"Miss, Your opponent's turn\n")==0){
         break;
       }else if(strcmp(buffer,"The last ship sunk\n")==0){

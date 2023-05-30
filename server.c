@@ -139,20 +139,20 @@ void Shoot(int sd, Ships *player){
 		memset(buffery, '\0', sizeof(buffery));
 		printf("x: %d y: %d\n", x, y);
 
-		if(player->map[x][y]==1){
-			player->map[x][y]=2;
-			player->shoot_map[x][y]=1;
-			player->n--;
+		if(player->map[x][y]==1){ //jesli stoi tam statek
+			player->map[x][y]=2; //zaznacz ze trafiony
+			player->shoot_map[x][y]=1; //zaznacz trafienie na mapie przeciwnika
+			player->n--; //zmniejsza ilosc pol do trafienia
 			if(player->n==0){
 				send(sd,LASTHIT_MESS, strlen(LASTHIT_MESS), 0);
 				puts("Hit and sunk last ship\n");
 				//dodac wyswietlanie mapy
 				break;
 			}
-			puts("Hit");
-			send(sd,HIT_MESS, strlen(HIT_MESS)+1, 0);
+			puts("Hit"); //to sie nie wyswietla
+			send(sd,HIT_MESS, strlen(HIT_MESS)+1, 0); //wysyla wiadomosc o trafieniu
 			memset(send_map, '\0', sizeof(send_map));
-			puts("Sending map to client");
+			puts("Sending map to client\n"); //to sie nie wyswietla
 			for(int j=0;j<10;j++){
 				for(int i=0;i<10;i++){
 					memset(int_var, '\0', sizeof(int_var));
@@ -164,10 +164,11 @@ void Shoot(int sd, Ships *player){
 			}
 			
 			if(send(sd,send_map, strlen(send_map)+1, 0)<0) puts("error, cannot send data\n");
+			delay(1);
 			printf("%s\n", send_map);
 
-		} else if(player->map[x][y]==0){
-			player->shoot_map[x][y]=-1;
+		} else if(player->map[x][y]==0){ //jesli nie stoi tam statek
+			player->shoot_map[x][y]=-1; //zaznacz pudlo
 			send(sd,MISS_MESS, strlen(MISS_MESS)+1, 0);
 			memset(send_map, '\0', sizeof(send_map));
 			for(int j=0;j<10;j++){
@@ -191,7 +192,8 @@ void Shoot(int sd, Ships *player){
 			// 	}
 			// 	if(send(sd,"\n", strlen("\n"), 0)<0) puts("error, cannot send data\n");
 			// }
-			//Czemu tu byl break?
+			//Q: Czemu tu byl break?
+			//A: Bo nie trafil i konczy strzelac
 			break;
 		}
 	}
