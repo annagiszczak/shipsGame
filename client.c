@@ -74,25 +74,11 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
     perror("cannot connect ");
     exit(1);
   }
-
-  // for(int i=2;i<argc;i++) {
-    
   //   rc = send(sd, argv[i], strlen(argv[i]) + 1, 0);
-    
-  //   if(rc<0) {
-  //     perror("cannot send data ");
-  //     close(sd);
-  //     exit(1);
-    
-  //   }
-
-  //   printf("%s: data%u sent (%s)\n",argv[0],i-1,argv[i]);
-
-   
-  // }
   //Odczytuje HELLO MESSAGE
   read(sd, buffer, sizeof(buffer));
   printf("%s\n", buffer);
+  memset(buffer,'\0', strlen(buffer));
 
   //Odczytuje Hello game message
   read(sd, buffer, sizeof(buffer));
@@ -100,28 +86,26 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
 
   //Ustawia statki
   for(int j = 3; j>0; j--){
-    printf("%d co \n", j);
-    memset(buffer, '\0', sizeof(buffer));
-    printf("%d coo\n", j);
-    rc = read(sd, buffer, sizeof(buffer));
-    printf("%d\n", rc);
-    printf("%d cooo\n", j);
-    // delay(1);
-    printf("%s\n", buffer);
-    memset(buffer, '\0', sizeof(buffer));
+    memset(buffer, '\0', strlen(buffer));
+    printf("Dane dla statku: %d\n", j);
+    if(read(sd, buffer, sizeof(buffer))<0) puts("Cannot read data\n");
+    else printf("%s\n", buffer);
+    memset(buffer, '\0', strlen(buffer));
     for(int i = 0; i < j; i++){
-      printf("jestem w petli\n");
-      // delay(10);
+      printf("Dane dla bloczku: %d\n", i);
       scanf(" %s", buffer);
       scanf(" %s", buffer2);
+      printf("%s %s\n", buffer, buffer2);
       if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n");
-      delay(1);
+      else printf("Wyslano %s\n", buffer);
+      // delay(1);
       if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n");
-      delay(1);
+      else printf("Wyslano %s\n", buffer2);
+      // delay(1);
       printf("%s\n", buffer);
       printf("%s\n", buffer2);
-      memset(buffer, '\0', sizeof(buffer));
-      memset(buffer2, '\0', sizeof(buffer2));
+      memset(buffer, '\0', strlen(buffer));
+      memset(buffer2, '\0', strlen(buffer2));
     }
   }
 
@@ -153,14 +137,14 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
         for(int i=0;i<10;i++){
           memset(shoot_map, '\0', sizeof(shoot_map));
           read(sd, shoot_map, sizeof(shoot_map));
-          printf("%s", shoot_map);
+          printf("%s ", shoot_map);
         }
-		  puts("\n");
+		    printf("\n");
 	    }
 
-      if(strcmp(buffer,"Pudło, kolej przeciwnika\n")==0){
+      if(strcmp(buffer,"Miss, Your opponent's turn\n")==0){
         break;
-      }else if(strcmp(buffer,"Zatopiony, ostatni statek\n")==0){
+      }else if(strcmp(buffer,"The last ship sunk\n")==0){
         memset(buffer, '\0', sizeof(buffer));
         read(sd, buffer, sizeof(buffer));
         printf("\n %s\n", buffer);
@@ -173,6 +157,13 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
         memset(buffer, '\0', sizeof(buffer));
         break;
       }
+    }
+    rc = send(sd, buffer, strlen(buffer) + 1, 0);
+    
+    if(rc<0) {
+      perror("cannot send data ");
+      close(sd);
+      exit(1);
     }
     
   }

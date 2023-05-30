@@ -33,8 +33,6 @@ char *WINP1_MESS = "Player 1 won\n";
 char *WIN_MESS = "You won\n";
 char *LOSE_MESS = "You lose\n";
 
-
-
 typedef struct Ships {
 	int map[10][10];
 	int n;
@@ -54,22 +52,18 @@ void SetShips(int sd, Ships *player){
 	char buffery[3];
 	char *SHIP_MESS[]={"\nSet your three-mast ships\n", "\nSet your two-mast ships\n", "\nSet your one-mast ships\n"};
 	//wysyla wiadomosc o ustawianiu statkow
-	send(sd, SHIP_MESS[0], strlen(SHIP_MESS[0]), 0);
+	if(send(sd, SHIP_MESS[0], strlen(SHIP_MESS[0]), 0)<0) puts("error, cannot send data\n");
+	else puts("Message about 3,2,1-ships sent\n");
 	//delay(1);
 	for(int i = 0; i<3; i++){
-		puts("czekam na x");
-		rc = read(sd, bufferx, 3);
-		puts("po czekaniu na x");
-		if(rc<0){
-			perror("cannot read data");
-		}
+		puts("I am waiting for x, y coordinates\n");
+		if(read(sd, bufferx, 3)<0) puts("error, cannot read data\n");
+		else puts("I have read x coordinate\n");
 		x = atoi(bufferx);
 		memset(bufferx, '\0', sizeof(bufferx));
 		// delay(1);
-		rc = read(sd, buffery, 3);
-		if(rc<0){
-			perror("cannot read data");
-		}
+		if(read(sd, buffery, 3)<0) puts("error, cannot read data\n");
+		else puts("I have read y coordinate\n");
 		y = atoi(buffery);
 		memset(buffery, '\0', sizeof(buffery));
 		printf("x: %d y: %d\n", x, y);
@@ -77,19 +71,16 @@ void SetShips(int sd, Ships *player){
 		player->three[i][0]=x;
 		player->three[i][1]=y;
 	}
-	send(sd, SHIP_MESS[1], strlen(SHIP_MESS[1]), 0);
+	if(send(sd, SHIP_MESS[1], strlen(SHIP_MESS[1]), 0)<0) printf("error, cannot send data\n");
 	for(int i = 0; i<2; i++){
-		rc = read(sd, bufferx, 3);
-		if(rc<0){
-			perror("cannot read data");
-		}
+		puts("I am waiting for x, y coordinates\n");
+		if(read(sd, bufferx, 3)<0) puts("error, cannot read data\n");
+		else puts("I have read x coordinate\n");
 		x = atoi(bufferx);
 		memset(bufferx, '\0', sizeof(bufferx));
 		// delay(1);
-		rc = read(sd, buffery, 3);
-		if(rc<0){
-			perror("cannot read data");
-		}
+		if(read(sd, buffery, 3)<0) puts("error, cannot read data\n");
+		else puts("I have read y coordinate\n");
 		y = atoi(buffery);
 		memset(buffery, '\0', sizeof(buffery));
 		printf("x: %d y: %d\n", x, y);
@@ -97,19 +88,16 @@ void SetShips(int sd, Ships *player){
 		player->two[i][0]=x;
 		player->two[i][1]=y;
 	}
-	send(sd, SHIP_MESS[2], strlen(SHIP_MESS[2]), 0);
+	if(send(sd, SHIP_MESS[2], strlen(SHIP_MESS[2]), 0)<0) printf("error, cannot send data\n");
 	for(int i = 0; i<1; i++){
-		rc = read(sd, bufferx, 3);
-		if(rc<0){
-			perror("cannot read data");
-		}
+		puts("I am waiting for x, y coordinates\n");
+		if(read(sd, bufferx, 3)<0) puts("error, cannot read data\n");
+		else puts("I have read x coordinate\n");
 		x = atoi(bufferx);
 		memset(bufferx, '\0', sizeof(bufferx));
 		// delay(1);
-		rc = read(sd, buffery, 3);
-		if(rc<0){
-			perror("cannot read data");
-		}
+		if(read(sd, buffery, 3)<0) puts("error, cannot read data\n");
+		else puts("I have read y coordinate\n");
 		y = atoi(buffery);
 		memset(buffery, '\0', sizeof(buffery));
 		printf("x: %d y: %d\n", x, y);
@@ -202,6 +190,7 @@ void Shoot(int sd, Ships *player){
 
 		if(player->map[x][y]==1){
 			player->map[x][y]=2;
+			player->shoot_map[x][y]=1;
 			player->n--;
 			if(player->n==0){
 				send(sd,LASTHIT_MESS, strlen(LASTHIT_MESS), 0);
@@ -210,8 +199,24 @@ void Shoot(int sd, Ships *player){
 			}
 			puts("siedze w ifie obok wiadomosci HIT_message");
 			send(sd,HIT_MESS, strlen(HIT_MESS), 0);
+
+			for(int j = 0;j<10;j++){
+				for(int i=0;i<10;i++){
+					memset(bufferx, '\0', sizeof(bufferx));
+					sprintf(bufferx, "%d", player->shoot_map[j][i]);
+					if(send(sd,bufferx, strlen(bufferx), 0)<0) puts("error, cannot send data\n");
+				}
+			}
 		} else if(player->map[x][y]==0){
+			player->shoot_map[x][y]=-1;
 			send(sd,MISS_MESS, strlen(MISS_MESS), 0);
+			for(int j = 0;j<10;j++){
+				for(int i=0;i<10;i++){
+					memset(bufferx, '\0', sizeof(bufferx));
+					sprintf(bufferx, "%d", player->shoot_map[j][i]);
+					if(send(sd,bufferx, strlen(bufferx), 0)<0) puts("error, cannot send data\n");
+				}
+			}
 			break;
 		}
 	}
@@ -271,7 +276,7 @@ int main(int argc , char *argv[])
 	printf("Listener on port %d \n", PORT);
 		
 	//try to specify maximum of 3 pending connections for the master socket
-	if (listen(master_socket, 2) < 0)
+	if (listen(master_socket, 4) < 0)
 	{
 		perror("listen");
 		exit(EXIT_FAILURE);
@@ -358,7 +363,7 @@ int main(int argc , char *argv[])
 			// memset(message, '\0', sizeof(&message));
 			for(int i = 0; i < max_clients; i++){
 				// printf("%d\n", i);
-				send(client_socket[i], HELLO_MESS, strlen(HELLO_MESS), 0);
+				send(client_socket[i], HELLO_MESS, strlen(HELLO_MESS)+1, 0);
 				SetShips(client_socket[i], &player[i]);
 			}
 			
