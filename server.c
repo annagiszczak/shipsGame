@@ -145,13 +145,14 @@ void Shoot(int sd, Ships *player){
 			player->n--;
 			if(player->n==0){
 				send(sd,LASTHIT_MESS, strlen(LASTHIT_MESS), 0);
-				puts("siedze w ifie ostatni statek");
+				puts("Hit and sunk last ship\n");
 				//dodac wyswietlanie mapy
 				break;
 			}
+			puts("Hit");
 			send(sd,HIT_MESS, strlen(HIT_MESS)+1, 0);
-			puts("siedze w ifie obok wiadomosci HIT_message");
 			memset(send_map, '\0', sizeof(send_map));
+			puts("Sending map to client");
 			for(int j=0;j<10;j++){
 				for(int i=0;i<10;i++){
 					memset(int_var, '\0', sizeof(int_var));
@@ -161,8 +162,9 @@ void Shoot(int sd, Ships *player){
 				}
 				strcat(send_map, "\n");
 			}
-			printf("%s\n", send_map);
+			
 			if(send(sd,send_map, strlen(send_map)+1, 0)<0) puts("error, cannot send data\n");
+			printf("%s\n", send_map);
 
 		} else if(player->map[x][y]==0){
 			player->shoot_map[x][y]=-1;
@@ -189,10 +191,11 @@ void Shoot(int sd, Ships *player){
 			// 	}
 			// 	if(send(sd,"\n", strlen("\n"), 0)<0) puts("error, cannot send data\n");
 			// }
+			//Czemu tu byl break?
 			break;
 		}
 	}
-	puts("wyszedlem z petli");
+	puts("Shoot function ended\n");
 }
 
 
