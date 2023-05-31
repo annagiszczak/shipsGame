@@ -116,53 +116,52 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
  //glowna petla
   while(1){
     memset(buffer, '\0', sizeof(buffer));
-    read(sd, buffer, sizeof(buffer));  //YOUT_MESS odczytuje your turn
+    if(read(sd, buffer, sizeof(buffer))<0) puts("Cannot read data\n");  //YOUT_MESS odczytuje your turn
     printf("\n %s\n", buffer);
     memset(buffer, '\0', sizeof(buffer));
-    while(1){
-      scanf("%s", buffer); //x
-      scanf("%s", buffer2); //y
-      if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n"); //send x
-      else read(sd, trash, sizeof(trash)); //read OK 
-      if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n"); //send y
-      // else read(sd, trash, sizeof(trash)); //read OK 
-      memset(buffer, '\0', sizeof(buffer)); //x
-      memset(buffer2, '\0', sizeof(buffer2)); //y
-      memset(shoot_map, '\0', sizeof(shoot_map)); //mapa
-      if(read(sd, buffer, sizeof(buffer))<0) puts("Cannot send data\n"); //read MISS or HIT or LASTHIT and MAP
-      else send(sd, "ok", sizeof("ok"), 0); //send OK
-      printf("\n %s\n", buffer); 
-      //delay(2);
-      //wyswietla strzaly
-      //read(sd, shoot_map, sizeof(shoot_map));
-      //delaye dodac czy cos
-      //printf("%s\n", shoot_map);
-      //delay(1);
-      if(strcmp(buffer,"Miss, Your opponent's turn\n")==0){
-        break;
-      }else if(strcmp(buffer,"The last ship sunk\n")==0){
-        memset(buffer, '\0', sizeof(buffer));
-        read(sd, buffer, sizeof(buffer));
-        printf("\n %s\n", buffer);
-        memset(buffer, '\0', sizeof(buffer));
-        read(sd, buffer, sizeof(buffer));
-        printf("\n %s\n", buffer);
-        memset(buffer, '\0', sizeof(buffer));
-        read(sd, buffer, sizeof(buffer));
-        printf("\n %s\n", buffer);
-        memset(buffer, '\0', sizeof(buffer));
-        break;
-      }
+    scanf("%s", buffer); //x
+    scanf("%s", buffer2); //y
+    if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n"); //send x
+    else read(sd, trash, sizeof(trash)); //read OK 
+    if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n"); //send y
+    // else read(sd, trash, sizeof(trash)); //read OK 
+    memset(buffer, '\0', sizeof(buffer)); //x
+    memset(buffer2, '\0', sizeof(buffer2)); //y
+    memset(shoot_map, '\0', sizeof(shoot_map)); //mapa
+    if(read(sd, buffer, sizeof(buffer))<0) puts("Cannot read data\n"); //read MISS or HIT or LASTHIT and MAP
+    else send(sd, "ok", sizeof("ok"), 0); //send OK
+    printf("\n %s\n", buffer); 
+    //delay(2);
+    //wyswietla strzaly
+    //read(sd, shoot_map, sizeof(shoot_map));
+    //delaye dodac czy cos
+    //printf("%s\n", shoot_map);
+    //delay(1);
+
+    // if(strcmp(buffer,"Miss, Your opponent's turn\n")==0){
+    //   break;
+    if(strcmp(buffer,"The last ship sunk\n")==0){
+      memset(buffer, '\0', sizeof(buffer));
+      read(sd, buffer, sizeof(buffer));
+      printf("\n %s\n", buffer);
+      memset(buffer, '\0', sizeof(buffer));
+      read(sd, buffer, sizeof(buffer));
+      printf("\n %s\n", buffer);
+      memset(buffer, '\0', sizeof(buffer));
+      read(sd, buffer, sizeof(buffer));
+      printf("\n %s\n", buffer);
+      memset(buffer, '\0', sizeof(buffer));
+      close(sd);
+      exit(1);
+
+    }
+    if(rc<0){
+      perror("cannot send data ");
+      close(sd);
+      exit(1);
     }
   }
 
-//zamyka polaczenie
-rc = send(sd, buffer, strlen(buffer) + 1, 0);
-if(rc<0){
-  perror("cannot send data ");
-  close(sd);
-  exit(1);
-}
 return 0;
   
 }

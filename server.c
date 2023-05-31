@@ -128,11 +128,11 @@ void Shoot(int sd, Ships *player){
 	char *LASTHIT_MESS = "The last ship sunk\n";
 	while(1){
 		if(send(sd, YOUT_MESS, strlen(YOUT_MESS)+1, 0)<0) puts("error, cannot send data\n");
-		if(read(sd, bufferx, 3)<0) perror("Cannot send data");
+		if(read(sd, bufferx, 3)<0) puts("Cannot send data");
 		else send(sd, "ok", strlen("ok")+1, 0);
 		x = atoi(bufferx);
 		memset(bufferx, '\0', sizeof(bufferx));
-		if(read(sd, buffery, 3)<0) perror("Cannot send data");
+		if(read(sd, buffery, 3)<0) puts("Cannot send data");
 		y = atoi(buffery);
 		memset(buffery, '\0', sizeof(buffery));
 		printf("x: %d y: %d\n", x, y);
@@ -186,6 +186,7 @@ void Shoot(int sd, Ships *player){
 			strcat(send_map, MISS_MESS);
 			strcat(send_mess, send_map);
 			if(send(sd,send_map, strlen(send_map)+1, 0)<0) puts("error, cannot send data\n");
+			else read(sd, trash, sizeof(trash));
 			//Q: Czemu tu byl break?
 			//A: Bo nie trafil i konczy strzelac
 			break;
