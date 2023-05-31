@@ -1,15 +1,15 @@
-//Example code: A simple server side code, which echos back the received message.
-//Handle multiple socket connections with select and fd_set on Linux
+//ShipsGame client program by Anna Giszczak and Barbara Chytła
+//Server base taken from GeeksForGeeks socket programming example code
 #include <stdio.h>
-#include <string.h> //strlen
+#include <string.h> 
 #include <stdlib.h>
 #include <errno.h>
-#include <unistd.h> //close
-#include <arpa/inet.h> //close
+#include <unistd.h> 
+#include <arpa/inet.h> 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
+#include <sys/time.h> 
 #include <time.h>
 	
 #define TRUE 1
@@ -22,16 +22,17 @@ void delay(int number_of_sec){
 	while(clock()<start_time + mili_sec);
 }
 
-///Globalne zmienne MESSAGE
-char *HELLO_MESS = "Hello in the game, please set your ships\n";
+//MESSAGE variables
+char *HELLO_MESS = "Welcome to the game, please set your ships\n";
 char *GAME_MESS = "Game is starting\n";		
 char *YOUT_MESS = "Your turn\n";
 
-//Victory
+//ictory messages
 char *WINP0_MESS = "Player 0 won\n";
 char *WINP1_MESS = "Player 1 won\n";
 char *WIN_MESS = "You won\n";
 char *LOSE_MESS = "You lose\n";
+
 char send_map[1024] = "";
 char int_var[10]="";
 char send_mess[1024]="";
@@ -40,11 +41,10 @@ char trash[10]="";
 typedef struct Ships {
 	int map[10][10];
 	int n;
-	//int four[4][2];
 	int three[3][2];
 	int two[2][2];
 	int one[1][2];
-	int shoot_map[10][10]; //mapa do wizualizacji strzalow
+	int shoot_map[10][10]; //map
 } Ships;
 
 void SetShips(int sd, Ships *player){
@@ -55,17 +55,14 @@ void SetShips(int sd, Ships *player){
 	char bufferx[3];
 	char buffery[3];
 	char *SHIP_MESS[]={"\nSet your three-mast ships\n", "\nSet your two-mast ships\n", "\nSet your one-mast ships\n"};
-	//wysyla wiadomosc o ustawianiu statkow
+	//sends SHIP MESSAGE
 	if(send(sd, SHIP_MESS[0], strlen(SHIP_MESS[0]), 0)<0) puts("error, cannot send data\n");
-	else puts("Message about 3,2,1-ships sent\n");
-	//delay(1);
 	for(int i = 0; i<3; i++){
 		puts("I am waiting for x, y coordinates\n");
 		if(read(sd, bufferx, 3)<0) puts("error, cannot read data\n");
 		else puts("I have read x coordinate\n");
 		x = atoi(bufferx);
 		memset(bufferx, '\0', sizeof(bufferx));
-		// delay(1);
 		if(read(sd, buffery, 3)<0) puts("error, cannot read data\n");
 		else puts("I have read y coordinate\n");
 		y = atoi(buffery);
@@ -82,7 +79,6 @@ void SetShips(int sd, Ships *player){
 		else puts("I have read x coordinate\n");
 		x = atoi(bufferx);
 		memset(bufferx, '\0', sizeof(bufferx));
-		// delay(1);
 		if(read(sd, buffery, 3)<0) puts("error, cannot read data\n");
 		else puts("I have read y coordinate\n");
 		y = atoi(buffery);
@@ -99,7 +95,6 @@ void SetShips(int sd, Ships *player){
 		else puts("I have read x coordinate\n");
 		x = atoi(bufferx);
 		memset(bufferx, '\0', sizeof(bufferx));
-		// delay(1);
 		if(read(sd, buffery, 3)<0) puts("error, cannot read data\n");
 		else puts("I have read y coordinate\n");
 		y = atoi(buffery);
@@ -123,7 +118,7 @@ void Shoot(int sd, Ships *player){
 	int x=0, y=0, rc;
 	char bufferx[3];
 	char buffery[3];
-	char *HIT_MESS = "Good. Shoot, once again\n";
+	char *HIT_MESS = "Well done! Shoot, once again\n";
 	char *MISS_MESS = "Miss, Your opponent's turn\n";
 	char *LASTHIT_MESS = "The last ship sunk\n";
 	while(1){
@@ -137,21 +132,19 @@ void Shoot(int sd, Ships *player){
 		memset(buffery, '\0', sizeof(buffery));
 		printf("x: %d y: %d\n", x, y);
 
-		if(player->map[x][y]==1){ //jesli stoi tam statek
-			player->map[x][y]=2; //zaznacz ze trafiony
-			player->shoot_map[x][y]=1; //zaznacz trafienie na mapie przeciwnika
-			player->n--; //zmniejsza ilosc pol do trafienia
+		if(player->map[x][y]==1){ //1 - there is a ship
+			player->map[x][y]=2; //2 - mark as hit
+			player->shoot_map[x][y]=1; //mark opponent's ship as hit
+			player->n--; 
 			if(player->n==0){
 				send(sd,LASTHIT_MESS, strlen(LASTHIT_MESS), 0);
 				puts("Hit and sunk last ship\n");
-				//dodac wyswietlanie mapy
 				break;
 			}
-			puts("Hit"); //to sie nie wyswietla
-			//send(sd,HIT_MESS, strlen(HIT_MESS)+1, 0); //wysyla wiadomosc o trafieniu
+			puts("Hit");
 			memset(send_map, '\0', sizeof(send_map));
 			memset(send_mess, '\0', sizeof(send_map));
-			puts("Sending map to client\n"); //to sie nie wyswietla
+			puts("Sending map to client\n"); 
 			for(int j=0;j<10;j++){
 				for(int i=0;i<10;i++){
 					memset(int_var, '\0', sizeof(int_var));
@@ -165,13 +158,11 @@ void Shoot(int sd, Ships *player){
 			strcat(send_mess, send_map);
 			
 			if(send(sd,send_mess, strlen(send_mess)+1, 0)<0) puts("error, cannot send data\n");
-			else read(sd, trash, sizeof(trash)); //read OK
-			//delay(1);
+			else read(sd, trash, sizeof(trash));
 			printf("%s\n", send_map);
 
-		} else if(player->map[x][y]==0){ //jesli nie stoi tam statek
-			player->shoot_map[x][y]=-1; //zaznacz pudlo
-			//send(sd,MISS_MESS, strlen(MISS_MESS)+1, 0);
+		} else if(player->map[x][y]==0){ //0 - no ship in that place
+			player->shoot_map[x][y]=-1; //mark as missed
 			memset(send_map, '\0', sizeof(send_map));
 			memset(send_mess, '\0', sizeof(send_map));
 			for(int j=0;j<10;j++){
@@ -187,8 +178,6 @@ void Shoot(int sd, Ships *player){
 			strcat(send_mess, send_map);
 			if(send(sd,send_map, strlen(send_map)+1, 0)<0) puts("error, cannot send data\n");
 			else read(sd, trash, sizeof(trash));
-			//Q: Czemu tu byl break?
-			//A: Bo nie trafil i konczy strzelac
 			break;
 		}
 	}
@@ -207,13 +196,13 @@ int main(int argc , char *argv[])
 	struct sockaddr_in address;
 	Ships player[2] = {0};
 		
-	char buffer[1025]; //data buffer of 1K
+	char buffer[1025]; 
 		
 	//set of socket descriptors
 	fd_set readfds;
 		
-	//a message
-	char *message = "ECHO Daemon v1.0 \r\n";
+	//connect message
+	char *message = "connected \r\n";
 	
 	//initialise all client_socket[] to 0 so not checked
 	for (i = 0; i < max_clients; i++)
@@ -228,8 +217,7 @@ int main(int argc , char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-	//set master socket to allow multiple connections ,
-	//this is just a good habit, it will work without this
+	//set master socket to allow multiple connections
 	if( setsockopt(master_socket, SOL_SOCKET, SO_REUSEADDR, (char *)&opt,
 		sizeof(opt)) < 0 )
 	{
@@ -237,12 +225,11 @@ int main(int argc , char *argv[])
 		exit(EXIT_FAILURE);
 	}
 	
-	//type of socket created
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = htonl(INADDR_ANY);
 	address.sin_port = htons( PORT );
 		
-	//bind the socket to localhost port 8888
+	//bind the socket 
 	if (bind(master_socket, (struct sockaddr *)&address, sizeof(address))<0)
 	{
 		perror("bind failed");
@@ -250,7 +237,7 @@ int main(int argc , char *argv[])
 	}
 	printf("Listener on port %d \n", PORT);
 		
-	//try to specify maximum of 3 pending connections for the master socket
+	//maximum of 2 pending connections 
 	if (listen(master_socket, 4) < 0)
 	{
 		perror("listen");
@@ -280,13 +267,12 @@ int main(int argc , char *argv[])
 			if(sd > 0)
 				FD_SET( sd , &readfds);
 				
-			//highest file descriptor number, need it for the select function
+			//highest file descriptor number
 			if(sd > max_sd)
 				max_sd = sd;
 		}
 	
-		//wait for an activity on one of the sockets , timeout is NULL ,
-		//so wait indefinitely
+		//wait for an activity on one of the sockets
 		activity = select( max_sd + 1 , &readfds , NULL , NULL , NULL);
 	
 		if ((activity < 0) && (errno!=EINTR))
@@ -319,7 +305,6 @@ int main(int argc , char *argv[])
 			//add new socket to array of sockets
 			for (i = 0; i < max_clients; i++)
 			{
-				//if position is empty
 				if( client_socket[i] == 0 )
 				{
 					client_socket[i] = new_socket;
@@ -330,19 +315,14 @@ int main(int argc , char *argv[])
 			}
 		}
 
-		//Odtąd będziemy korygować kod
-		
+		//game code
 		if(client_socket[0] != 0 && client_socket[1] != 0){
 			
 			puts("Game is starting\n");
-			// memset(message, '\0', sizeof(&message));
 			for(int i = 0; i < max_clients; i++){
-				// printf("%d\n", i);
 				send(client_socket[i], HELLO_MESS, strlen(HELLO_MESS)+1, 0);
 				SetShips(client_socket[i], &player[i]);
 			}
-			
-			// memset(message, '\0', strlen(message));
 			
 			for(int i = 0; i < max_clients; i++){
 					send(client_socket[i], GAME_MESS, strlen(GAME_MESS), 0);
@@ -351,11 +331,8 @@ int main(int argc , char *argv[])
 			
 			while(1){
 				for(int i = 0; i < max_clients; i++){
-					// send(client_socket[i], YOUT_MESS, strlen(YOUT_MESS), 0);
 					Shoot(client_socket[i], &player[(i+1)%2]);
 					if(player[(i+1)%2].n == 0) break;
-					// message = "Wait for your turn\n";
-					// send(client_socket[i], message, strlen(message), 0);
 				}
 				if(player[0].n == 0){
 					send(client_socket[0], WINP1_MESS, strlen(WINP0_MESS), 0);
@@ -379,48 +356,7 @@ int main(int argc , char *argv[])
 				close(sd);
 				client_socket[i] = 0;
 			}
-		// }*/
 		}
-		
-
-
-		/* //To jest fajny kod do sprawdzania czy sie polaczyl 
-		//uzytkownik i go wywala lub odczytuje jego wiad jednak
-		//nie wiem na razie jak to do nas zaimplementowac
-
-
-		//else its some IO operation on some other socket
-		for (i = 0; i < max_clients; i++)
-		{
-			sd = client_socket[i];
-				
-			if (FD_ISSET( sd , &readfds))
-			{
-				//Check if it was for closing , and also read the
-				//incoming message
-				if ((valread = read( sd , buffer, 1024)) == 0)
-				{
-					//Somebody disconnected , get his details and print
-					getpeername(sd , (struct sockaddr*)&address , \
-						(socklen_t*)&addrlen);
-					printf("Host disconnected , ip %s , port %d \n" ,inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
-						
-					//Close the socket and mark as 0 in list for reuse
-					close( sd );
-					client_socket[i] = 0;
-				}
-					
-				//Echo back the message that came in
-				else
-				{
-					//set the string terminating NULL byte on the end
-					//of the data read
-					buffer[valread] = '\0';
-					send(sd , buffer , strlen(buffer) , 0 );
-				}
-			}
-		}
-		*/ 
 	}
 		
 	return 0;

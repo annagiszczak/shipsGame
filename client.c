@@ -1,7 +1,5 @@
-/* fpont 12/99 */
-/* pont.net    */
-/* tcpClient.c */
-/* korekta W.Bajdecki 2009, 2019, 2023 */
+//ShipsGame client program by Anna Giszczak and Barbara Chytła
+//Client base taken from W. Bajdecki
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -10,8 +8,8 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h> /* close */
-#include <string.h> /* memset() */
+#include <unistd.h> 
+#include <string.h> 
 #include <time.h>
 
 int n = 6;
@@ -22,7 +20,7 @@ void delay(int number_of_sec){
 	while(clock()<start_time + mili_sec);
 }
 
-int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
+int main (int argc, char *argv[]) { 
 
   const int SERVER_PORT=8888;
 
@@ -40,7 +38,7 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
     exit(1);
   }
 
-  h = gethostbyname(argv[1]); //zamiana nazwy domenowej na adres IP maszyny
+  h = gethostbyname(argv[1]); 
   if(h==NULL) {
     printf("%s: unknown host '%s'\n",argv[0],argv[1]);
     exit(1);
@@ -75,71 +73,58 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
     perror("cannot connect ");
     exit(1);
   }
-  //   rc = send(sd, argv[i], strlen(argv[i]) + 1, 0);
-  //Odczytuje HELLO MESSAGE
+  
+  //reads HELLO MESSAGE
   read(sd, buffer, sizeof(buffer));
   printf("%s\n", buffer);
   memset(buffer,'\0', strlen(buffer));
 
-  //Odczytuje Hello game message
+  //reads greeting
   read(sd, buffer, sizeof(buffer));
   printf("%s\n", buffer);
 
-  //Ustawia statki
+  //setting ships
   for(int j = 3; j>0; j--){
     memset(buffer, '\0', strlen(buffer));
-    printf("Dane dla statku: %d\n", j);
-    if(read(sd, buffer, sizeof(buffer))<0) puts("Cannot read data\n");
+    printf("Set ship: %d\n", j);
+    if(rc=read(sd, buffer, sizeof(buffer))<0) puts("Cannot read data\n");
     else printf("%s\n", buffer);
     memset(buffer, '\0', strlen(buffer));
     for(int i = 0; i < j; i++){
-      printf("Dane dla bloczku: %d\n", i);
+      printf("Pair of coordinates: %d\n", i);
       scanf(" %s", buffer);
       scanf(" %s", buffer2);
-      if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n");
-      else printf("Wyslano %s\n", buffer);
-      // delay(1);
-      if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n");
-      else printf("Wyslano %s\n", buffer2);
-      // delay(1);
+      if(rc=send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n");
+      if(rc=send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n");
       memset(buffer, '\0', strlen(buffer));
       memset(buffer2, '\0', strlen(buffer2));
     }
   }
 
-  //Odczytuje Game is starting
+  //reads GAME MESSAGE
   read(sd, buffer, sizeof(buffer));
   printf("%s\n", buffer);
 
-  //
   
- //glowna petla
+ //main game code
   while(1){
     memset(buffer, '\0', sizeof(buffer));
-    if(read(sd, buffer, sizeof(buffer))<0) puts("Cannot read data\n");  //YOUT_MESS odczytuje your turn
+    if(rc=read(sd, buffer, sizeof(buffer))<0) puts("Cannot read data\n");  //reads YOUT_MESS
     printf("\n %s\n", buffer);
     memset(buffer, '\0', sizeof(buffer));
-    scanf("%s", buffer); //x
-    scanf("%s", buffer2); //y
-    if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n"); //send x
-    else read(sd, trash, sizeof(trash)); //read OK 
-    if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n"); //send y
-    // else read(sd, trash, sizeof(trash)); //read OK 
-    memset(buffer, '\0', sizeof(buffer)); //x
-    memset(buffer2, '\0', sizeof(buffer2)); //y
-    memset(shoot_map, '\0', sizeof(shoot_map)); //mapa
-    if(read(sd, buffer, sizeof(buffer))<0) puts("Cannot read data\n"); //read MISS or HIT or LASTHIT and MAP
-    else send(sd, "ok", sizeof("ok"), 0); //send OK
+    scanf("%s", buffer); //input x
+    scanf("%s", buffer2); //input y
+    if(rc=send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n"); //send x
+    else read(sd, trash, sizeof(trash)); 
+    if(rc=send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n"); //send y
+    // else read(sd, trash, sizeof(trash));
+    memset(buffer, '\0', sizeof(buffer)); 
+    memset(buffer2, '\0', sizeof(buffer2)); 
+    memset(shoot_map, '\0', sizeof(shoot_map)); 
+    if(rc=read(sd, buffer, sizeof(buffer))<0) puts("Cannot read data\n"); //reads HIT MESSAGE and MAP
+    else send(sd, "ok", sizeof("ok"), 0); 
     printf("\n %s\n", buffer); 
-    //delay(2);
-    //wyswietla strzaly
-    //read(sd, shoot_map, sizeof(shoot_map));
-    //delaye dodac czy cos
-    //printf("%s\n", shoot_map);
-    //delay(1);
 
-    // if(strcmp(buffer,"Miss, Your opponent's turn\n")==0){
-    //   break;
     if(strcmp(buffer,"The last ship sunk\n")==0){
       memset(buffer, '\0', sizeof(buffer));
       read(sd, buffer, sizeof(buffer));
