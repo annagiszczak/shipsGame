@@ -34,6 +34,8 @@ char *WIN_MESS = "You won\n";
 char *LOSE_MESS = "You lose\n";
 char send_map[1024] = "";
 char int_var[10]="";
+char send_mess[1024]="";
+char trash[10]="";
 
 typedef struct Ships {
 	int map[10][10];
@@ -125,16 +127,12 @@ void Shoot(int sd, Ships *player){
 	char *MISS_MESS = "Miss, Your opponent's turn\n";
 	char *LASTHIT_MESS = "The last ship sunk\n";
 	while(1){
-		rc = read(sd, bufferx, 3);
-		if(rc<0){
-			perror("Cannot send data");
-		}
+		if(send(sd, YOUT_MESS, strlen(YOUT_MESS)+1, 0)<0) puts("error, cannot send data\n");
+		if(read(sd, bufferx, 3)<0) perror("Cannot send data");
+		else send(sd, "ok", strlen("ok")+1, 0);
 		x = atoi(bufferx);
 		memset(bufferx, '\0', sizeof(bufferx));
-		rc = read(sd, buffery, 3);
-		if(rc<0){
-			perror("Cannot send data");
-		}
+		if(read(sd, buffery, 3)<0) perror("Cannot send data");
 		y = atoi(buffery);
 		memset(buffery, '\0', sizeof(buffery));
 		printf("x: %d y: %d\n", x, y);
@@ -150,8 +148,9 @@ void Shoot(int sd, Ships *player){
 				break;
 			}
 			puts("Hit"); //to sie nie wyswietla
-			send(sd,HIT_MESS, strlen(HIT_MESS)+1, 0); //wysyla wiadomosc o trafieniu
+			//send(sd,HIT_MESS, strlen(HIT_MESS)+1, 0); //wysyla wiadomosc o trafieniu
 			memset(send_map, '\0', sizeof(send_map));
+			memset(send_mess, '\0', sizeof(send_map));
 			puts("Sending map to client\n"); //to sie nie wyswietla
 			for(int j=0;j<10;j++){
 				for(int i=0;i<10;i++){
@@ -162,15 +161,19 @@ void Shoot(int sd, Ships *player){
 				}
 				strcat(send_map, "\n");
 			}
+			strcat(send_map, HIT_MESS);
+			strcat(send_mess, send_map);
 			
-			if(send(sd,send_map, strlen(send_map)+1, 0)<0) puts("error, cannot send data\n");
-			delay(1);
+			if(send(sd,send_mess, strlen(send_mess)+1, 0)<0) puts("error, cannot send data\n");
+			else read(sd, trash, sizeof(trash)); //read OK
+			//delay(1);
 			printf("%s\n", send_map);
 
 		} else if(player->map[x][y]==0){ //jesli nie stoi tam statek
 			player->shoot_map[x][y]=-1; //zaznacz pudlo
-			send(sd,MISS_MESS, strlen(MISS_MESS)+1, 0);
+			//send(sd,MISS_MESS, strlen(MISS_MESS)+1, 0);
 			memset(send_map, '\0', sizeof(send_map));
+			memset(send_mess, '\0', sizeof(send_map));
 			for(int j=0;j<10;j++){
 				for(int i=0;i<10;i++){
 					memset(int_var, '\0', sizeof(int_var));
@@ -180,18 +183,9 @@ void Shoot(int sd, Ships *player){
 				}
 				strcat(send_map, "\n");
 			}
+			strcat(send_map, MISS_MESS);
+			strcat(send_mess, send_map);
 			if(send(sd,send_map, strlen(send_map)+1, 0)<0) puts("error, cannot send data\n");
-			
-			
-			// for(int j = 0;j<10;j++){
-			// 	for(int i=0;i<10;i++){
-			// 		memset(bufferx, '\0', sizeof(bufferx));
-			// 		sprintf(bufferx, "%d ", player->shoot_map[j][i]);
-			// 		// printf("%s ", bufferx);
-			// 		if(send(sd,bufferx, strlen(bufferx), 0)<0) puts("error, cannot send data\n");
-			// 	}
-			// 	if(send(sd,"\n", strlen("\n"), 0)<0) puts("error, cannot send data\n");
-			// }
 			//Q: Czemu tu byl break?
 			//A: Bo nie trafil i konczy strzelac
 			break;
@@ -356,7 +350,7 @@ int main(int argc , char *argv[])
 			
 			while(1){
 				for(int i = 0; i < max_clients; i++){
-					send(client_socket[i], YOUT_MESS, strlen(YOUT_MESS), 0);
+					// send(client_socket[i], YOUT_MESS, strlen(YOUT_MESS), 0);
 					Shoot(client_socket[i], &player[(i+1)%2]);
 					if(player[(i+1)%2].n == 0) break;
 					// message = "Wait for your turn\n";

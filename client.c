@@ -32,6 +32,7 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
   char buffer[1024]="";
   char buffer2[1024]="";
   char shoot_map[1024]="";
+  char trash[10]="";
 
   
   if(argc < 2) {
@@ -95,15 +96,12 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
       printf("Dane dla bloczku: %d\n", i);
       scanf(" %s", buffer);
       scanf(" %s", buffer2);
-      printf("%s %s\n", buffer, buffer2);
       if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n");
       else printf("Wyslano %s\n", buffer);
       // delay(1);
       if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n");
       else printf("Wyslano %s\n", buffer2);
       // delay(1);
-      printf("%s\n", buffer);
-      printf("%s\n", buffer2);
       memset(buffer, '\0', strlen(buffer));
       memset(buffer2, '\0', strlen(buffer2));
     }
@@ -125,20 +123,21 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
       scanf("%s", buffer); //x
       scanf("%s", buffer2); //y
       if(send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n"); //send x
-      delay(1);
+      else read(sd, trash, sizeof(trash)); //read OK 
       if(send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n"); //send y
-      delay(2);
+      // else read(sd, trash, sizeof(trash)); //read OK 
       memset(buffer, '\0', sizeof(buffer)); //x
       memset(buffer2, '\0', sizeof(buffer2)); //y
       memset(shoot_map, '\0', sizeof(shoot_map)); //mapa
-      read(sd, buffer, sizeof(buffer));  //read MISS or HIT or LASTHIT
+      if(read(sd, buffer, sizeof(buffer))<0) puts("Cannot send data\n"); //read MISS or HIT or LASTHIT and MAP
+      else send(sd, "ok", sizeof("ok"), 0); //send OK
       printf("\n %s\n", buffer); 
-      delay(2);
+      //delay(2);
       //wyswietla strzaly
-      read(sd, shoot_map, sizeof(shoot_map));
+      //read(sd, shoot_map, sizeof(shoot_map));
       //delaye dodac czy cos
-      printf("%s\n", shoot_map);
-      delay(1);
+      //printf("%s\n", shoot_map);
+      //delay(1);
       if(strcmp(buffer,"Miss, Your opponent's turn\n")==0){
         break;
       }else if(strcmp(buffer,"The last ship sunk\n")==0){
@@ -152,19 +151,18 @@ int main (int argc, char *argv[]) { /* licznik argumentow, tablica argumentow */
         read(sd, buffer, sizeof(buffer));
         printf("\n %s\n", buffer);
         memset(buffer, '\0', sizeof(buffer));
-        //zamyka polaczenie
-        rc = send(sd, buffer, strlen(buffer) + 1, 0);
-        if(rc<0) {
-          perror("cannot send data ");
-          close(sd);
-          exit(1);
-        }
-        //break;
+        break;
       }
     }
   }
-  
 
+//zamyka polaczenie
+rc = send(sd, buffer, strlen(buffer) + 1, 0);
+if(rc<0){
+  perror("cannot send data ");
+  close(sd);
+  exit(1);
+}
 return 0;
   
 }
