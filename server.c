@@ -1,5 +1,6 @@
-//ShipsGame client program by Anna Giszczak and Barbara Chytła
-//Server base taken from GeeksForGeeks socket programming example code
+//ShipsGame client program by Anna Giszczak and Barbara Chytła 
+//Server base taken from GeeksForGeeks socket programming example code (181-307 ze zmianami pod nasz program)
+//https://www.geeksforgeeks.org/socket-programming-in-cc-handling-multiple-clients-on-server-without-multi-threading/
 #include <stdio.h>
 #include <string.h> 
 #include <stdlib.h>
@@ -15,12 +16,6 @@
 #define TRUE 1
 #define FALSE 0
 #define PORT 8888
-
-void delay(int number_of_sec){
-	int mili_sec = 1000*number_of_sec;
-	clock_t start_time = clock();
-	while(clock()<start_time + mili_sec);
-}
 
 //MESSAGE variables
 char *HELLO_MESS = "Welcome to the game, please set your ships\n";
@@ -184,9 +179,6 @@ void Shoot(int sd, Ships *player){
 	puts("Shoot function ended\n");
 }
 
-
-
-
 int main(int argc , char *argv[])
 {
 	int opt = TRUE;
@@ -237,7 +229,7 @@ int main(int argc , char *argv[])
 	}
 	printf("Listener on port %d \n", PORT);
 		
-	//maximum of 2 pending connections 
+	//maximum of pending connections 
 	if (listen(master_socket, 4) < 0)
 	{
 		perror("listen");
@@ -335,12 +327,10 @@ int main(int argc , char *argv[])
 					if(player[(i+1)%2].n == 0) break;
 				}
 				if(player[0].n == 0){
-					send(client_socket[0], WINP1_MESS, strlen(WINP0_MESS), 0);
 					send(client_socket[1], WIN_MESS, strlen(WIN_MESS), 0);
 					send(client_socket[0], LOSE_MESS, strlen(LOSE_MESS), 0);
 					break;
 				}else if(player[1].n == 0){
-					send(client_socket[1], WINP0_MESS, strlen(WINP1_MESS), 0);
 					send(client_socket[0], WIN_MESS, strlen(WIN_MESS), 0);
 					send(client_socket[1], LOSE_MESS, strlen(LOSE_MESS), 0);
 					break;
@@ -349,12 +339,11 @@ int main(int argc , char *argv[])
 			
 			
 			//close connections
-			getpeername(sd , (struct sockaddr*)&address ,(socklen_t*)&addrlen);
-			printf("Host disconnected , ip %s , port %d \n" ,inet_ntoa(address.sin_addr) , ntohs(address.sin_port));
 			for (i = 0; i < max_clients; i++){
 				sd = client_socket[i];
 				close(sd);
 				client_socket[i] = 0;
+				printf("Client %d disconnected\n", i);
 			}
 		}
 	}

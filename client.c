@@ -14,13 +14,7 @@
 
 int n = 6;
 
-void delay(int number_of_sec){
-	int mili_sec = 1000*number_of_sec;
-	clock_t start_time = clock();
-	while(clock()<start_time + mili_sec);
-}
-
-int main (int argc, char *argv[]) { 
+int main (int argc, char *argv[]){ 
 
   const int SERVER_PORT=8888;
 
@@ -110,6 +104,12 @@ int main (int argc, char *argv[]) {
   while(1){
     memset(buffer, '\0', sizeof(buffer));
     if(rc=read(sd, buffer, sizeof(buffer))<0) puts("Cannot read data\n");  //reads YOUT_MESS
+    if(strcmp(buffer,"You lose\n")==0){
+      printf("\n %s\n", buffer);
+      close(sd);
+      exit(1);
+      break;
+    }
     printf("\n %s\n", buffer);
     memset(buffer, '\0', sizeof(buffer));
     scanf("%s", buffer); //input x
@@ -117,7 +117,6 @@ int main (int argc, char *argv[]) {
     if(rc=send(sd, buffer, strlen(buffer) + 1, 0)<0) puts("Cannot send data\n"); //send x
     else read(sd, trash, sizeof(trash)); 
     if(rc=send(sd, buffer2, strlen(buffer2) + 1, 0)<0) puts("Cannot send data\n"); //send y
-    // else read(sd, trash, sizeof(trash));
     memset(buffer, '\0', sizeof(buffer)); 
     memset(buffer2, '\0', sizeof(buffer2)); 
     memset(shoot_map, '\0', sizeof(shoot_map)); 
@@ -129,21 +128,9 @@ int main (int argc, char *argv[]) {
       memset(buffer, '\0', sizeof(buffer));
       read(sd, buffer, sizeof(buffer));
       printf("\n %s\n", buffer);
-      memset(buffer, '\0', sizeof(buffer));
-      read(sd, buffer, sizeof(buffer));
-      printf("\n %s\n", buffer);
-      memset(buffer, '\0', sizeof(buffer));
-      read(sd, buffer, sizeof(buffer));
-      printf("\n %s\n", buffer);
-      memset(buffer, '\0', sizeof(buffer));
       close(sd);
       exit(1);
-
-    }
-    if(rc<0){
-      perror("cannot send data ");
-      close(sd);
-      exit(1);
+      break;
     }
   }
 
