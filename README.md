@@ -26,7 +26,7 @@ aż do zatopienia statków u jakiegoś przeciwnika. Gdy zatopione są wszystkie 
 kownika to jego przeciwnik wygrywa. Przez cały czas rozgrywki w terminalu, w którym
 mieści się serwer wyświetlane są informacje o stanie gry.
 
-POmoc w stworzeniu serwera umieszczony na poniższej stronie:
-[tutaj]{https://www.geeksforgeeks.org/socket-programming-in-cc-handling-multiple-clients-on-server-
-without-multi-threading/}
+Pomoc w stworzeniu serwera umieszczony na poniższej stronie:
+{tutaj}[https://www.geeksforgeeks.org/socket-programming-in-cc-handling-multiple-clients-on-server-
+without-multi-threading/]
 Plik klienta został stworzony na bazie pliku TCP serwera z zajęć laboratoryjnych.
