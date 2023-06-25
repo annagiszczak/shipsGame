@@ -27,6 +27,5 @@ kownika to jego przeciwnik wygrywa. Przez cały czas rozgrywki w terminalu, w kt
 mieści się serwer wyświetlane są informacje o stanie gry.
 
 Pomoc w stworzeniu serwera umieszczony na poniższej stronie:
-[tutaj](https://www.geeksforgeeks.org/socket-programming-in-cc-handling-multiple-clients-on-server-
-without-multi-threading/)
+[tutaj](https://www.geeksforgeeks.org/socket-programming-in-cc-handling-multiple-clients-on-server-without-multi-threading/)
 Plik klienta został stworzony na bazie pliku TCP serwera z zajęć laboratoryjnych.
